@@ -12,25 +12,28 @@ public class RadarUI : MonoBehaviour
     [SerializeField] private RadarQuarter _quarterDown;
     [SerializeField] private RadarQuarter _quarterLeft;
 
-    public void DisplayTargetDirection(string direction, float distance)
+    public void DisplayTargetDirection(string direction, float distance, Transform target)
     {
-        switch (direction)
+        if (target.gameObject.activeSelf == true)
         {
-            case Up:
-                _quarterUp.ShowDistance(distance);
-                break;
+            switch (direction)
+            {
+                case Up:
+                    _quarterUp.ShowDistance(distance, target);
+                    break;
 
-            case Right:
-                _quarterRight.ShowDistance(distance);
-                break;
+                case Right:
+                    _quarterRight.ShowDistance(distance, target);
+                    break;
 
-            case Left:
-                _quarterLeft.ShowDistance(distance);
-                break;
+                case Left:
+                    _quarterLeft.ShowDistance(distance, target);
+                    break;
 
-            case Down:
-                _quarterDown.ShowDistance(distance);
-                break;
+                case Down:
+                    _quarterDown.ShowDistance(distance, target);
+                    break;
+            }
         }
     }
 }

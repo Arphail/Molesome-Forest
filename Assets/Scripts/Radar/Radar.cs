@@ -11,8 +11,6 @@ public class Radar : MonoBehaviour
 
     void Update()
     {
-        print(_targets.Count);
-        
         if (_targets != null)
         {
             foreach (var target in _targets)
@@ -22,16 +20,16 @@ public class Radar : MonoBehaviour
                 float angle = Vector3.SignedAngle(direction, _radar.forward, Vector3.up);
 
                 if (angle > -45f && angle <= 45f)
-                    _radarUI.DisplayTargetDirection(RadarUI.Up, distance);
+                    _radarUI.DisplayTargetDirection(RadarUI.Up, distance, target);
 
                 else if (angle > -135f && angle <= -45f)
-                    _radarUI.DisplayTargetDirection(RadarUI.Right, distance);
+                    _radarUI.DisplayTargetDirection(RadarUI.Right, distance, target);
 
                 else if (angle > 45f && angle <= 135f)
-                    _radarUI.DisplayTargetDirection(RadarUI.Left, distance);
+                    _radarUI.DisplayTargetDirection(RadarUI.Left, distance, target);
 
                 else
-                    _radarUI.DisplayTargetDirection(RadarUI.Down, distance);
+                    _radarUI.DisplayTargetDirection(RadarUI.Down, distance, target);
             }
         }
     }
@@ -39,12 +37,18 @@ public class Radar : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         if (other.TryGetComponent(out Goldmine goldmine) && _targets.Contains(goldmine.transform) == false)
-            _targets.Add(goldmine.transform);
+        {
+            if (goldmine.IsActivated == false)
+                _targets.Add(goldmine.transform);
+        }
+
+        if (other.TryGetComponent(out Treasure treasure) && _targets.Contains(treasure.transform) == false)
+            _targets.Add(treasure.transform);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent(out Goldmine goldmine))
-            _targets.Remove(goldmine.transform);
+        if(_targets.Contains(other.transform) == true)
+            _targets.Remove(other.transform);
     }
 }

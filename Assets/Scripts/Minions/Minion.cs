@@ -1,34 +1,65 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Minion : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed;
+    [SerializeField] private NavMeshAgent _agent;
+    [SerializeField] private GoldStacker _stacker;
+    [SerializeField] private float _goldCapacity;
+    [SerializeField] private float _delayTime;
 
-    private Vector3 _minePosition;
-    private bool _goingToMine;
+    private WaitForSeconds _farmDelay;
+    private Vector3 _basePosition;
+    private Vector3 _goldminePosition;
+    private int _currentGold = 0;
+    private bool _isFarming;
 
-    private void Update()
+    public int CurrentGold => _currentGold;
+
+    public Vector3 GoldminePosition => _goldminePosition;
+
+    private void Start()
     {
-        if (_goingToMine)
-            transform.position = Vector3.MoveTowards(transform.position, _minePosition, _moveSpeed * Time.deltaTime);
+        _farmDelay = new WaitForSeconds(_delayTime);
     }
 
+    public void SetBase(Vector3 basePosition) => _basePosition = basePosition;
+
+    public void SetGoldmine(Vector3 goldminePosition) => _goldminePosition = goldminePosition;
+
+    public void EmptyBag()
+    {
+        _currentGold = 0;
+        _stacker.EmptyStacks();
+    } 
+
+    public void WalkToDestination(Vector3 destination)
+    {
+        _agent.SetDestination(destination);
+    }
+    
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.TryGetComponent(out Goldmine goldmine))
-            _goingToMine = false;
+        if (other.TryGetComponent<Goldmine>(out Goldmine goldmine) && _isFarming == false)
+        {
+            _agent.isStopped = true;
+            _isFarming = true;
+            StartCoroutine(FarmGold());
+        }
     }
 
-    public void FarmGold()
+    private IEnumerator FarmGold()
     {
+        while (_currentGold < _goldCapacity)
+        {
+            _currentGold++;
+            _stacker.StackGold();
+            yield return _farmDelay;
+        }
 
-    }
-
-    public void GoToGoldMine(Goldmine goldmine)
-    {
-        _goingToMine = true;
-        _minePosition = goldmine.transform.position;
+        _agent.isStopped = false;
+        _isFarming = false;
+        WalkToDestination(_basePosition);
     }
 }
